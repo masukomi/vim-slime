@@ -28,7 +28,7 @@ endfunction
 
 function! s:ScreenConfig() abort
   if !exists("b:slime_config")
-    let b:slime_config = {"sessionname": "", "windowname": "0"}
+    let b:slime_config = {"sessionname": "vim_" . &filetype . "_slime", "windowname": "0", "startrepl": "n"}
   end
 
   " screen needs a file, so set a default if not configured
@@ -38,6 +38,21 @@ function! s:ScreenConfig() abort
 
   let b:slime_config["sessionname"] = input("screen session name: ", b:slime_config["sessionname"], "custom,<SNR>" . s:SID() . "_ScreenSessionNames")
   let b:slime_config["windowname"]  = input("screen window name: ",  b:slime_config["windowname"])
+  let b:slime_config["startrepl"] = input(("start " . &filetype . " REPL? [y|n]: "), b:slime_config["startrepl"])
+
+  if b:slime_config["startrepl"] == "y"
+    " start up a REPL for the appropriate language
+    " TODO Figure out which shell command we'll have to run to start the repl by inspecting 
+    " the filetype and setting b:slime_config["repl"] to use the appropriate default repl
+    " for the language (if known)
+    let b:slime_config["repl"] = ''
+
+    let b:slime_config["repl"] = input (("What command should I invoke to start a " . &filetype . " REPL? "), b:slime_config["repl"])
+
+    if b:slime_config["repl"] != ''
+      call system("screen -S " . shellescape(b:slime_config["sessionname"]) . " -p " . shellescape(b:slime_config["windowname"]) . " -X stuff \$'" . b:slime_config["repl"] . "\r'")
+    endif
+  endif
 endfunction
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -244,4 +259,5 @@ if !exists("g:slime_no_mappings") || !g:slime_no_mappings
     nmap <c-c>v <Plug>SlimeConfig
   endif
 endif
+
 
